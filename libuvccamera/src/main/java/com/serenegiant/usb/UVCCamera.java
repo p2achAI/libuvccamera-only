@@ -66,7 +66,7 @@ public class UVCCamera {
     public static final int CTRL_AE				= 0x00000002;	// D1:  Auto-Exposure Mode
     public static final int CTRL_AE_PRIORITY	= 0x00000004;	// D2:  Auto-Exposure Priority
     public static final int CTRL_AE_ABS			= 0x00000008;	// D3:  Exposure Time (Absolute)
-    public static final int CTRL_AR_REL			= 0x00000010;	// D4:  Exposure Time (Relative)
+    public static final int CTRL_AE_REL			= 0x00000010;	// D4:  Exposure Time (Relative)
     public static final int CTRL_FOCUS_ABS		= 0x00000020;	// D5:  Focus (Absolute)
     public static final int CTRL_FOCUS_REL		= 0x00000040;	// D6:  Focus (Relative)
     public static final int CTRL_IRIS_ABS		= 0x00000080;	// D7:  Iris (Absolute)
@@ -340,22 +340,23 @@ public class UVCCamera {
 
 	public static List<Size> getSupportedSize(final int type, final String supportedSize) {
 		final List<Size> result = new ArrayList<Size>();
-		if (!TextUtils.isEmpty(supportedSize))
-		try {
-			final JSONObject json = new JSONObject(supportedSize);
-			final JSONArray formats = json.getJSONArray("formats");
-			final int format_nums = formats.length();
-			for (int i = 0; i < format_nums; i++) {
-				final JSONObject format = formats.getJSONObject(i);
-				if(format.has("type") && format.has("size")) {
-					final int format_type = format.getInt("type");
-					if ((format_type == type) || (type == -1)) {
-						addSize(format, format_type, 0, result);
+		if (!TextUtils.isEmpty(supportedSize)) {
+			try {
+				final JSONObject json = new JSONObject(supportedSize);
+				final JSONArray formats = json.getJSONArray("formats");
+				final int format_nums = formats.length();
+				for (int i = 0; i < format_nums; i++) {
+					final JSONObject format = formats.getJSONObject(i);
+					if (format.has("type") && format.has("size")) {
+						final int format_type = format.getInt("type");
+						if ((format_type == type) || (type == -1)) {
+							addSize(format, format_type, 0, result);
+						}
 					}
 				}
+			} catch (final JSONException e) {
+				e.printStackTrace();
 			}
-		} catch (final JSONException e) {
-			e.printStackTrace();
 		}
 		return result;
 	}
@@ -901,6 +902,79 @@ public class UVCCamera {
     	}
     }
 
+	/**
+	 * Set auto exposure mode.
+	 * @param autoExposure true for auto, false for manual
+	 */
+	public synchronized void setAutoExposure(final boolean autoExposure) {
+		if (mNativePtr != 0) {
+			nativeSetExposureMode(mNativePtr, autoExposure ? mExposureModeDef : 1); // 1 = manual
+		}
+	}
+	/**
+	 * Get auto exposure mode.
+	 * @return true if auto exposure is enabled
+	 */
+	public synchronized boolean getAutoExposure() {
+		if (mNativePtr != 0) {
+			int mode = nativeGetExposureMode(mNativePtr);
+			if (mode < 0) {
+				return true;
+			}
+			return mode == mExposureModeDef;
+		}
+		return true;
+	}
+
+	/**
+	 * Set exposure value.
+	 * @param exposure exposure in percent [0-100]
+	 */
+	public synchronized void setExposure(final int exposure) {
+		if (mNativePtr != 0) {
+			final float range = Math.abs(mExposureMax - mExposureMin);
+			if (range > 0) {
+				nativeSetExposure(mNativePtr, (int)(exposure/100.f * range) + mExposureMin);
+			}
+		}
+	}
+
+	/**
+	 * Convert absolute exposure value to percent.
+	 * @param exposure_abs absolute exposure value
+	 * @return exposure in percent
+	 */
+	public synchronized int getExposure(final int exposure_abs) {
+		int result = 0;
+		if (mNativePtr != 0) {
+			nativeUpdateExposureLimit(mNativePtr);
+			final float range = Math.abs(mExposureMax - mExposureMin);
+			if (range > 0) {
+				result = (int)((exposure_abs-mExposureMin)* 100.f/range);
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Get current exposure [%].
+	 * @return exposure in percent
+	 */
+	public synchronized int getExposure() {
+		return getExposure(nativeGetExposure(mNativePtr));
+	}
+
+	/**
+	 * Reset exposure to default.
+	 */
+
+	public synchronized void resetExposure() {
+		if (mNativePtr != 0) {
+			nativeSetExposure(mNativePtr, mExposureDef);
+		}
+	}
+
+
 //================================================================================
 	public synchronized void updateCameraParams() {
     	if (mNativePtr != 0) {
@@ -912,17 +986,53 @@ public class UVCCamera {
     				mProcSupports = nativeGetProcSupports(mNativePtr);
     	    	// 設定値を取得
     	    	if ((mControlSupports != 0) && (mProcSupports != 0)) {
-	    	    	nativeUpdateBrightnessLimit(mNativePtr);
-	    	    	nativeUpdateContrastLimit(mNativePtr);
-	    	    	nativeUpdateSharpnessLimit(mNativePtr);
-	    	    	nativeUpdateGainLimit(mNativePtr);
-	    	    	nativeUpdateGammaLimit(mNativePtr);
-	    	    	nativeUpdateSaturationLimit(mNativePtr);
-	    	    	nativeUpdateHueLimit(mNativePtr);
-	    	    	nativeUpdateZoomLimit(mNativePtr);
-	    	    	nativeUpdateWhiteBlanceLimit(mNativePtr);
-	    	    	nativeUpdateFocusLimit(mNativePtr);
+					if((mProcSupports & (PU_BRIGHTNESS & 0x7FFFFFFF)) !=0) {
+						nativeUpdateBrightnessLimit(mNativePtr);
+					}
+					if((mProcSupports & (PU_CONTRAST & 0x7FFFFFFF)) !=0){
+						nativeUpdateContrastLimit(mNativePtr);
+					}
+					if((mProcSupports & (PU_SATURATION & 0x7FFFFFFF)) !=0){
+						nativeUpdateSaturationLimit(mNativePtr);
+					}
+					if((mProcSupports & (PU_HUE & 0x7FFFFFFF)) !=0){
+						nativeUpdateHueLimit(mNativePtr);
+					}
+					if((mProcSupports & (PU_GAIN & 0x7FFFFFFF)) !=0){
+						nativeUpdateGainLimit(mNativePtr);
+					}
+					if((mProcSupports & (PU_GAMMA & 0x7FFFFFFF)) !=0){
+						nativeUpdateGammaLimit(mNativePtr);
+					}
+					if((mProcSupports & (PU_SHARPNESS & 0x7FFFFFFF)) !=0){
+						nativeUpdateSharpnessLimit(mNativePtr);
+					}
+					if((mProcSupports & (CTRL_ZOOM_ABS & 0x7FFFFFFF)) !=0){
+						nativeUpdateZoomLimit(mNativePtr);
+					}
+	    	    	if((mProcSupports & (CTRL_AE_ABS & 0x7FFFFFFF)) !=0) {
+						nativeUpdateWhiteBlanceLimit(mNativePtr);
+					}
+					if((mProcSupports & (CTRL_FOCUS_ABS & 0x7FFFFFFF)) !=0) {
+						nativeUpdateFocusLimit(mNativePtr);
+					}
+					if((mProcSupports & (CTRL_IRIS_ABS & 0x7FFFFFFF)) !=0) {
+						nativeUpdateIrisLimit(mNativePtr);
+					}
+					if((mProcSupports & (CTRL_AE & 0x7FFFFFFF)) !=0) {
+						nativeUpdateExposureModeLimit(mNativePtr);
+					}
+					if((mProcSupports & (CTRL_AE_PRIORITY & 0x7FFFFFFF)) !=0) {
+						nativeUpdateExposurePriorityLimit(mNativePtr);
+					}
+					if((mProcSupports & (CTRL_AE_ABS & 0x7FFFFFFF)) !=0) {
+						nativeUpdateExposureLimit(mNativePtr);
+					}
+					if((mProcSupports & (CTRL_AE_REL & 0x7FFFFFFF)) !=0) {
+						nativeUpdateExposureRelLimit(mNativePtr);
+					}
     	    	}
+
     	    	if (DEBUG) {
 					dumpControls(mControlSupports);
 					dumpProc(mProcSupports);

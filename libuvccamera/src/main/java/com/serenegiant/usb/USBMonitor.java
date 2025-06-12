@@ -167,7 +167,7 @@ public final class USBMonitor {
 			if (DEBUG) Log.i(TAG, "register:");
 			final Context context = mWeakContext.get();
 			if (context != null) {
-				mPermissionIntent = PendingIntent.getBroadcast(context, 0, new Intent(ACTION_USB_PERMISSION), 0);
+				mPermissionIntent = PendingIntent.getBroadcast(context, 0, new Intent(ACTION_USB_PERMISSION), PendingIntent.FLAG_IMMUTABLE);
 				final IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
 				// ACTION_USB_DEVICE_ATTACHED never comes on some devices so it should not be added here
 				filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
@@ -175,7 +175,7 @@ public final class USBMonitor {
 			}
 			// start connection check
 			mDeviceCounts = 0;
-			mAsyncHandler.postDelayed(mDeviceCheckRunnable, 1000);
+//			mAsyncHandler.postDelayed(mDeviceCheckRunnable, 1000);
 		}
 	}
 
@@ -546,11 +546,21 @@ public final class USBMonitor {
 	};
 
 	/**
+	 * Checks whether the specified USB device is already opened.
+	 * @param device
+	 * @return true if the device is already opened
+	 */
+	public boolean isDeviceOpened(UsbDevice device) {
+		return mCtrlBlocks.containsKey(device);
+	}
+
+	/**
 	 * open specific USB device
 	 * @param device
 	 */
 	private final void processConnect(final UsbDevice device) {
 		if (destroyed) return;
+		if (isDeviceOpened(device)) return;
 		updatePermission(device, true);
 		mAsyncHandler.post(new Runnable() {
 			@Override
