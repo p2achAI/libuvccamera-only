@@ -446,7 +446,7 @@ public class UVCCamera {
     // it is better to wait several hundreads millseconds.
 	public boolean checkSupportFlag(final long flag) {
     	updateCameraParams();
-    	if ((flag & 0x80000000) == 0x80000000)
+    	if ((flag & 0x80000000L) == 0x80000000L)
     		return ((mProcSupports & flag) == (flag & 0x7ffffffF));
     	else
     		return (mControlSupports & flag) == flag;
@@ -1010,7 +1010,7 @@ public class UVCCamera {
 					if((mProcSupports & (CTRL_ZOOM_ABS & 0x7FFFFFFF)) !=0){
 						nativeUpdateZoomLimit(mNativePtr);
 					}
-	    	    	if((mProcSupports & (CTRL_AE_ABS & 0x7FFFFFFF)) !=0) {
+					if((mProcSupports & (CTRL_AE_ABS & 0x7FFFFFFF)) !=0) {
 						nativeUpdateWhiteBlanceLimit(mNativePtr);
 					}
 					if((mProcSupports & (CTRL_FOCUS_ABS & 0x7FFFFFFF)) !=0) {
