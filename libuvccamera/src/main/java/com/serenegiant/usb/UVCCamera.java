@@ -976,6 +976,23 @@ public class UVCCamera {
 
 
 //================================================================================
+	/** Force refresh of AE mode limits without waiting for updateCameraParams gating. */
+	public synchronized void updateExposureModeLimit() {
+		if (mNativePtr != 0) {
+			final int r = nativeUpdateExposureModeLimit(mNativePtr);
+			// If device stalled (-9 PIPE at native) the Java-side fields may remain 0.
+			// Fallback: seed with current mode so later logic won't break.
+			if ((mExposureModeMin == 0) && (mExposureModeMax == 0) && (mExposureModeDef == 0)) {
+				final int cur = nativeGetExposureMode(mNativePtr);
+				if (cur > 0) {
+					if (mExposureModeDef == 0) mExposureModeDef = cur;
+					if (mExposureModeMin == 0) mExposureModeMin = cur;
+					if (mExposureModeMax == 0) mExposureModeMax = cur;
+				}
+			}
+		}
+	}
+
 	public synchronized void updateCameraParams() {
     	if (mNativePtr != 0) {
     		if ((mControlSupports == 0) || (mProcSupports == 0)) {
@@ -1007,28 +1024,28 @@ public class UVCCamera {
 					if((mProcSupports & (PU_SHARPNESS & 0x7FFFFFFF)) !=0){
 						nativeUpdateSharpnessLimit(mNativePtr);
 					}
-					if((mProcSupports & (CTRL_ZOOM_ABS & 0x7FFFFFFF)) !=0){
+					if((mControlSupports & (CTRL_ZOOM_ABS & 0x7FFFFFFF)) !=0){
 						nativeUpdateZoomLimit(mNativePtr);
 					}
-					if((mProcSupports & (CTRL_AE_ABS & 0x7FFFFFFF)) !=0) {
-						nativeUpdateWhiteBlanceLimit(mNativePtr);
-					}
-					if((mProcSupports & (CTRL_FOCUS_ABS & 0x7FFFFFFF)) !=0) {
-						nativeUpdateFocusLimit(mNativePtr);
-					}
-					if((mProcSupports & (CTRL_IRIS_ABS & 0x7FFFFFFF)) !=0) {
-						nativeUpdateIrisLimit(mNativePtr);
-					}
-					if((mProcSupports & (CTRL_AE & 0x7FFFFFFF)) !=0) {
+					if((mControlSupports & (CTRL_AE_ABS & 0x7FFFFFFF)) !=0) {
 						nativeUpdateExposureModeLimit(mNativePtr);
 					}
-					if((mProcSupports & (CTRL_AE_PRIORITY & 0x7FFFFFFF)) !=0) {
+					if((mControlSupports & (CTRL_FOCUS_ABS & 0x7FFFFFFF)) !=0) {
+						nativeUpdateFocusLimit(mNativePtr);
+					}
+					if((mControlSupports & (CTRL_IRIS_ABS & 0x7FFFFFFF)) !=0) {
+						nativeUpdateIrisLimit(mNativePtr);
+					}
+					if((mControlSupports & (CTRL_AE & 0x7FFFFFFF)) !=0) {
+						nativeUpdateExposureModeLimit(mNativePtr);
+					}
+					if((mControlSupports & (CTRL_AE_PRIORITY & 0x7FFFFFFF)) !=0) {
 						nativeUpdateExposurePriorityLimit(mNativePtr);
 					}
-					if((mProcSupports & (CTRL_AE_ABS & 0x7FFFFFFF)) !=0) {
+					if((mControlSupports & (CTRL_AE_ABS & 0x7FFFFFFF)) !=0) {
 						nativeUpdateExposureLimit(mNativePtr);
 					}
-					if((mProcSupports & (CTRL_AE_REL & 0x7FFFFFFF)) !=0) {
+					if((mControlSupports & (CTRL_AE_REL & 0x7FFFFFFF)) !=0) {
 						nativeUpdateExposureRelLimit(mNativePtr);
 					}
     	    	}

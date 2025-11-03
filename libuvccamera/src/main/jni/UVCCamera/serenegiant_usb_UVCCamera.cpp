@@ -367,7 +367,7 @@ static jint nativeGetScanningMode(JNIEnv *env, jobject thiz,
 }
 
 //======================================================================
-// Java mnethod correspond to this function should not be a static mathod
+// Java method correspond to this function should not be a static method
 static jint nativeUpdateExposureModeLimit(JNIEnv *env, jobject thiz,
 	ID_TYPE id_camera) {
 	jint result = JNI_ERR;

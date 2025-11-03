@@ -26,15 +26,17 @@ apply plugin: 'maven-publish'
 import org.apache.tools.ant.taskdefs.condition.Os
 
 android {
-	namespace 'com.serenegiant.uvccamera' // 필요 시 추가
-	compileSdk = 34
+	namespace 'com.serenegiant.uvccamera'
+
+	ndkVersion "25.1.8937393"
+	compileSdk 34
 
 	defaultConfig {
-		minSdk = 21
-		targetSdk = 34
+		minSdk 21
+		targetSdk 34
 
 		ndk {
-			abiFilters 'arm64-v8a' // 필요 아키텍처만
+			abiFilters 'arm64-v8a', 'armeabi-v7a'// 필요 아키텍처만
 		}
 
 		consumerProguardFiles 'proguard-rules.pro'
@@ -48,8 +50,8 @@ android {
 	}
 
 	compileOptions {
-		sourceCompatibility JavaVersion.VERSION_1_8
-		targetCompatibility JavaVersion.VERSION_1_8
+		sourceCompatibility JavaVersion.VERSION_11
+		targetCompatibility JavaVersion.VERSION_11
 	}
 
 	externalNativeBuild {
@@ -61,41 +63,41 @@ android {
 	sourceSets {
 		main {
 			jni.srcDirs = []
-			jniLibs.srcDirs = ['src/main/libs']
+			jniLibs.srcDirs = []
 		}
 	}
 }
 
-tasks.withType(JavaCompile) {
-	compileTask -> compileTask.dependsOn ndkBuild
-}
+//tasks.withType(JavaCompile) {
+//	compileTask -> compileTask.dependsOn ndkBuild
+//}
+//
+//String getNdkBuildPath() {
+//	Properties properties = new Properties()
+//	properties.load(project.rootProject.file('local.properties').newDataInputStream())
+//	def ndkBuildingDir = properties.getProperty("ndk.dir")
+//	def ndkBuildPath = ndkBuildingDir
+//	if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+//		ndkBuildPath = ndkBuildingDir + '/ndk-build.cmd'
+//	} else {
+//		ndkBuildPath = ndkBuildingDir + '/ndk-build'
+//	}
+//	return ndkBuildPath
+//}
 
-String getNdkBuildPath() {
-	Properties properties = new Properties()
-	properties.load(project.rootProject.file('local.properties').newDataInputStream())
-	def ndkBuildingDir = properties.getProperty("ndk.dir")
-	def ndkBuildPath = ndkBuildingDir
-	if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-		ndkBuildPath = ndkBuildingDir + '/ndk-build.cmd'
-	} else {
-		ndkBuildPath = ndkBuildingDir + '/ndk-build'
-	}
-	return ndkBuildPath
-}
+//task ndkBuild(type: Exec, description: 'Compile JNI source via NDK') {
+//	println('executing ndkBuild')
+//	def ndkBuildPath = getNdkBuildPath();
+//	commandLine ndkBuildPath, '-j8', '-C', file('src/main').absolutePath
+//}
+//
+//task ndkClean(type: Exec, description: 'clean JNI libraries') {
+//	println('executing ndkBuild clean')
+//	def ndkBuildPath = getNdkBuildPath();
+//	commandLine ndkBuildPath, 'clean', '-C', file('src/main').absolutePath
+//}
 
-task ndkBuild(type: Exec, description: 'Compile JNI source via NDK') {
-	println('executing ndkBuild')
-	def ndkBuildPath = getNdkBuildPath();
-	commandLine ndkBuildPath, '-j8', '-C', file('src/main').absolutePath
-}
-
-task ndkClean(type: Exec, description: 'clean JNI libraries') {
-	println('executing ndkBuild clean')
-	def ndkBuildPath = getNdkBuildPath();
-	commandLine ndkBuildPath, 'clean', '-C', file('src/main').absolutePath
-}
-
-clean.dependsOn 'ndkClean'
+//clean.dependsOn 'ndkClean'
 
 dependencies {
     implementation fileTree(dir: new File(buildDir, 'libs'), include: '*.jar')
@@ -108,15 +110,15 @@ dependencies {
 	}
 }
 
-afterEvaluate {
-	publishing {
-		publications {
-			release {
-				groupId = 'com.github.p2achAI'
-				artifactId = 'UVCCamera'
-				version = '1.0.1'
-				from component.release
-			}
-		}
-	}
-}
+//afterEvaluate {
+//	publishing {
+//		publications {
+//			release {
+//				groupId = 'com.github.p2achAI'
+//				artifactId = 'UVCCamera'
+//				version = '1.0.1'
+//				from component.release
+//			}
+//		}
+//	}
+//}

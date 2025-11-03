@@ -830,7 +830,7 @@ int UVCCamera::internalSetCtrlValue(control_value_t &values, uint32_t value,
 int UVCCamera::updateScanningModeLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
-	if (mPUSupports & CTRL_SCANNING) {
+	if (mCtrlSupports & CTRL_SCANNING) {
 		UPDATE_CTRL_VALUES(mScanningMode, uvc_get_scanning_mode);
 	}
 	RETURN(ret, int);
@@ -868,8 +868,31 @@ int UVCCamera::getScanningMode() {
 int UVCCamera::updateExposureModeLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
-	if (mPUSupports & CTRL_AE) {
-		UPDATE_CTRL_VALUES(mExposureMode, uvc_get_ae_mode);
+	if (mCtrlSupports & CTRL_AE) {
+//		UPDATE_CTRL_VALUES(mExposureMode, uvc_get_ae_mode);
+        uint8_t tmp = 0;
+        uvc_error_t  r_min = uvc_get_ae_mode(mDeviceHandle, &tmp, UVC_GET_MIN);
+        if (LIKELY(!r_min)) {
+            mExposureMode.min = tmp;
+        }
+
+        uvc_error_t  r_max = uvc_get_ae_mode(mDeviceHandle, &tmp, UVC_GET_MAX);
+        if (LIKELY(!r_max)) {
+            mExposureMode.max = tmp;
+        }
+
+        uvc_error_t  r_def = uvc_get_ae_mode(mDeviceHandle, &tmp, UVC_GET_DEF);
+        if (LIKELY(!r_def)) {
+            mExposureMode.def = tmp;
+        }
+
+        if (mExposureMode.min || mExposureMode.max || mExposureMode.def) {
+            min = mExposureMode.min;
+            max = mExposureMode.max;
+            def = mExposureMode.def;
+        }
+
+        ret = (!r_min && !r_max && !r_def) ? UVC_SUCCESS : ((r_def == UVC_SUCCESS) ? r_def : (r_max ? r_max : r_min));
 	}
 	RETURN(ret, int);
 }
@@ -906,7 +929,7 @@ int UVCCamera::getExposureMode() {
 int UVCCamera::updateExposurePriorityLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
-	if (mPUSupports & CTRL_AE_PRIORITY) {
+	if (mCtrlSupports & CTRL_AE_PRIORITY) {
 		UPDATE_CTRL_VALUES(mExposurePriority, uvc_get_ae_priority);
 	}
 	RETURN(ret, int);
@@ -944,7 +967,7 @@ int UVCCamera::getExposurePriority() {
 int UVCCamera::updateExposureLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
-	if (mPUSupports & CTRL_AE_ABS) {
+	if (mCtrlSupports & CTRL_AE_ABS) {
 		UPDATE_CTRL_VALUES(mExposureAbs, uvc_get_exposure_abs);
 	}
 	RETURN(ret, int);
@@ -982,7 +1005,7 @@ int UVCCamera::getExposure() {
 int UVCCamera::updateExposureRelLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
-	if (mPUSupports & CTRL_AE_REL) {
+	if (mCtrlSupports & CTRL_AE_REL) {
 		UPDATE_CTRL_VALUES(mExposureAbs, uvc_get_exposure_rel);
 	}
 	RETURN(ret, int);
@@ -1020,7 +1043,7 @@ int UVCCamera::getExposureRel() {
 int UVCCamera::updateAutoFocusLimit(int &min, int &max, int &def) {
 	ENTER();
 	int ret = UVC_ERROR_IO;
-	if (mPUSupports & CTRL_FOCUS_AUTO) {
+	if (mCtrlSupports & CTRL_FOCUS_AUTO) {
 		UPDATE_CTRL_VALUES(mAutoFocus, uvc_get_focus_auto);
 	}
 	RETURN(ret, int);

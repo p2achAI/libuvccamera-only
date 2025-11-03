@@ -43,6 +43,7 @@ import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
+import android.os.Build;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
@@ -88,10 +89,10 @@ public final class USBMonitor {
 		 */
 		public void onAttach(UsbDevice device);
 		/**
-		 * called when device dettach(after onDisconnect)
+		 * called when device detach(after onDisconnect)
 		 * @param device
 		 */
-		public void onDettach(UsbDevice device);
+		public void onDetach(UsbDevice device);
 		/**
 		 * called after device opend
 		 * @param device
@@ -171,8 +172,11 @@ public final class USBMonitor {
 				final IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
 				// ACTION_USB_DEVICE_ATTACHED never comes on some devices so it should not be added here
 				filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
-				context.registerReceiver(mUsbReceiver, filter);
-			}
+				int flags = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU ? Context.RECEIVER_NOT_EXPORTED : 0;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    context.registerReceiver(mUsbReceiver, filter, flags);
+                }
+            }
 			// start connection check
 			mDeviceCounts = 0;
 //			mAsyncHandler.postDelayed(mDeviceCheckRunnable, 1000);
@@ -494,17 +498,33 @@ public final class USBMonitor {
 				// when device removed
 				final UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
 				if (device != null) {
-					UsbControlBlock ctrlBlock = mCtrlBlocks.remove(device);
-					if (ctrlBlock != null) {
-						// cleanup
-						ctrlBlock.close();
+					if (isActuallyDisconnected(device)) {
+						// 진짜 detach 됐을 때만 close
+						UsbControlBlock ctrlBlock = mCtrlBlocks.remove(device);
+						if (ctrlBlock != null) {
+							ctrlBlock.close();
+						}
+						mDeviceCounts = 0;
+						processDetach(device);
+					} else {
+						Log.w(TAG, "Soft detach detected; device still alive");
+						// 무시하고 계속 유지
 					}
-					mDeviceCounts = 0;
-					processDettach(device);
 				}
 			}
 		}
 	};
+
+	private boolean isActuallyDisconnected(UsbDevice device) {
+		HashMap<String, UsbDevice> deviceList = mUsbManager.getDeviceList();
+		for (UsbDevice d : deviceList.values()) {
+			if (d.getVendorId() == device.getVendorId() &&
+					d.getProductId() == device.getProductId()) {
+				return false;  // 여전히 리스트에 존재함 → 아직 연결 중
+			}
+		}
+		return true;  // 리스트에서 사라짐 → 진짜 detach
+	}
 
 	/** number of connected & detected devices */
 	private volatile int mDeviceCounts = 0;
@@ -610,14 +630,14 @@ public final class USBMonitor {
 		}
 	}
 
-	private final void processDettach(final UsbDevice device) {
+	private final void processDetach(final UsbDevice device) {
 		if (destroyed) return;
-		if (DEBUG) Log.v(TAG, "processDettach:");
+		if (DEBUG) Log.v(TAG, "processDetach:");
 		if (mOnDeviceConnectListener != null) {
 			mAsyncHandler.post(new Runnable() {
 				@Override
 				public void run() {
-					mOnDeviceConnectListener.onDettach(device);
+					mOnDeviceConnectListener.onDetach(device);
 				}
 			});
 		}
