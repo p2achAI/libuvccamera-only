@@ -1,28 +1,20 @@
-apply plugin: 'com.android.library'
-apply plugin: 'maven-publish'
-
-ext {
-	supportLibVersion = '28.0.0'
-	commonLibVersion = '4.1.1'
+plugins {
+	id 'com.android.library'
+	id 'maven-publish'
 }
 
-
-
-
 android {
-	namespace 'com.serenegiant.uvccamera'
+	namespace "com.serenegiant.uvccamera"
 
-	ndkVersion "25.1.8937393"
-	compileSdk = 34
+	compileSdk 34
 
 	defaultConfig {
 		minSdk 21
 		targetSdk 34
 
 		ndk {
-			abiFilters 'arm64-v8a', 'armeabi-v7a'// 필요 아키텍처만
+			abiFilters 'arm64-v8a', 'armeabi-v7a'
 		}
-
 		consumerProguardFiles 'proguard-rules.pro'
 	}
 
@@ -52,17 +44,15 @@ android {
 	}
 }
 
-
 dependencies {
-    implementation fileTree(dir: new File(buildDir, 'libs'), include: '*.jar')
+	// AndroidX만 사용 (support-* 제거)
+	implementation "androidx.appcompat:appcompat:1.7.0"
+	implementation "androidx.core:core:1.13.1"
+	implementation "androidx.annotation:annotation:1.8.0"
 
-	implementation "com.android.support:support-v4:${supportLibVersion}"
-	implementation "com.android.support:support-annotations:${supportLibVersion}"
-
-	implementation("com.serenegiant:common:${commonLibVersion}") {
-		exclude module: 'support-v4'
+	// Serenegiant common (올바른 공식 repo 좌표)
+	implementation("com.serenegiant:common:4.1.1") {
+		exclude group: "com.android.support", module: "support-v4"
+		exclude group: "com.android.support", module: "support-annotations"
 	}
-	implementation "com.serenegiant:common:4.1.1"
-
 }
-
