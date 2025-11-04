@@ -77,7 +77,7 @@ afterEvaluate {
             create<MavenPublication>("mavenRelease") {
                 from(components["release"])
                 groupId = project.group.toString()
-                artifactId = "libuvccamera-only"
+                artifactId = "libuvccamera"
 
                 pom {
                     name.set("libuvccamera")
