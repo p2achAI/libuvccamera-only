@@ -34,6 +34,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.hardware.usb.UsbDevice;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -64,6 +65,7 @@ public class CameraDialog extends DialogFragment {
 	public static CameraDialog showDialog(final Activity parent/* add parameters here if you need */) {
 		CameraDialog dialog = newInstance(/* add parameters here if you need */);
 		try {
+			Log.d("hahahaha","test");
 			dialog.show(parent.getFragmentManager(), TAG);
 		} catch (final IllegalStateException e) {
 			dialog = null;
