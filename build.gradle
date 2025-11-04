@@ -8,11 +8,12 @@ ext {
 
 
 
+
 android {
 	namespace 'com.serenegiant.uvccamera'
 
 	ndkVersion "25.1.8937393"
-	compileSdk 34
+	compileSdk = 34
 
 	defaultConfig {
 		minSdk 21
@@ -61,5 +62,7 @@ dependencies {
 	implementation("com.serenegiant:common:${commonLibVersion}") {
 		exclude module: 'support-v4'
 	}
+	implementation "com.serenegiant:common:4.1.1"
+
 }
 
