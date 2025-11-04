@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/*
+ * libcommon
+ * utility/helper classes for myself
+ *
+ * Copyright (c) 2014-2025 saki t_saki@serenegiant.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+*/
+-->
+<resources>
+	<attr name="drawableCompat" format="reference" />
+	<attr name="backgroundCompat" format="reference" />
+	<attr name="backgroundTintCompat" format="color" />
+
+	<declare-styleable name="ProgressView">
+		<!-- 背景用のDrawable -->
+		<attr name="backgroundCompat" />
+		<!-- 背景用Drawableのtint指定 -->
+		<attr name="backgroundTintCompat" />
+		<!-- プログレス表示用のDrawable -->
+		<attr name="drawableCompat" />
+		<!-- プログレス表示用の色、android:drawableが指定されている場合はtint色として使う -->
+		<attr name="android:color" />
+		<attr name="android:min" />
+		<attr name="android:max" />
+		<attr name="android:progress" />
+	</declare-styleable>
+</resources>
