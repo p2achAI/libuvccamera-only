@@ -7,6 +7,7 @@ plugins {
 group = (findProperty("POM_GROUP") as String?)
     ?.takeIf { it.isNotBlank() }
     ?: "com.github.p2achAI"
+version = "1.0.15"
 android {
     namespace = "com.serenegiant.uvccamera"
     compileSdk = 34
@@ -78,6 +79,7 @@ afterEvaluate {
                 from(components["release"])
                 groupId = project.group.toString()
                 artifactId = "libuvccamera-only"
+                version = project.version.toString()
 
                 pom {
                     name.set("libuvccamera-only")

@@ -1,0 +1,1 @@
+/Users/seehoonkim/Desktop/workspace/P2achAndroidLibrary/libuvccamera/build/intermediates/cxx/Release/5t2b6b50/obj/local/armeabi-v7a
