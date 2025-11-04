@@ -5,7 +5,6 @@ plugins {
 }
 
 group = project.findProperty("group") as String? ?: "com.github.p2achAI"
-version = project.findProperty("version") as String? ?: "1.0.6"
 
 android {
     namespace = "com.serenegiant.uvccamera"
@@ -78,7 +77,6 @@ afterEvaluate {
                 from(components["release"])
                 groupId = group.toString()
                 artifactId = "libuvccamera"
-                version = version.toString()
 
                 pom {
                     name.set("libuvccamera")
