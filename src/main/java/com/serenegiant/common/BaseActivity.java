@@ -86,7 +86,7 @@ public class BaseActivity extends AppCompatActivity
 				//
 			}
 			mWorkerHandler = null;
-			Log.d("flkdjasfdkjafsdk","dasfdsfdasdfsd");
+			Log.d("flkdjasfdkjafsdk","dasfdsfdasdfsdaaaa");
 		}
 		super.onDestroy();
 	}
