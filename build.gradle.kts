@@ -77,10 +77,10 @@ afterEvaluate {
             create<MavenPublication>("mavenRelease") {
                 from(components["release"])
                 groupId = project.group.toString()
-                artifactId = "libuvccamera"
+                artifactId = "libuvccamera-only"
 
                 pom {
-                    name.set("libuvccamera")
+                    name.set("libuvccamera-only")
                     description.set("UVC camera library (p2ach fork)")
                     licenses {
                         license {
