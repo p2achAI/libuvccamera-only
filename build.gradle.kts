@@ -64,7 +64,7 @@ dependencies {
     implementation("androidx.annotation:annotation:1.8.0")
 
     // Serenegiant common (maven repo 필요)
-    implementation("com.serenegiant:common:4.1.1") {
+    api("com.serenegiant:common:4.1.1") {
         exclude(group = "com.android.support", module = "support-v4")
         exclude(group = "com.android.support", module = "support-annotations")
     }
