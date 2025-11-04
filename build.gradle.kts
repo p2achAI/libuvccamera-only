@@ -4,10 +4,10 @@ plugins {
     id("maven-publish")
 }
 
-group = (findProperty("POM_GROUP") as String?)
-    ?.takeIf { it.isNotBlank() }
-    ?: "com.github.p2achAI"
-version = "1.0.15"
+// ✅ group / version 명시 (JitPack용)
+group = "com.github.p2achAI"
+version = "1.0.15" // ← 새 버전명 (Git 태그도 v1.0.15 로 푸시할 예정)
+
 android {
     namespace = "com.serenegiant.uvccamera"
     compileSdk = 34
@@ -35,28 +35,19 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
-    kotlinOptions { jvmTarget = "11"}
+    kotlinOptions { jvmTarget = "11" }
 
-        externalNativeBuild {
+    externalNativeBuild {
         ndkBuild {
             path = file("src/main/jni/Android.mk")
         }
     }
 
-
     publishing {
         singleVariant("release") {
             withSourcesJar()
         }
-
     }
-
-//    sourceSets {
-//        getByName("main") {
-//            jni.srcDirs()     // 빈 배열 지정 (ndkBuild 사용)
-//            jniLibs.srcDirs() // 빈 배열 지정 (빌드 산출물 사용)
-//        }
-//    }
 }
 
 dependencies {
@@ -64,13 +55,12 @@ dependencies {
     implementation("androidx.core:core:1.13.1")
     implementation("androidx.annotation:annotation:1.8.0")
 
-    // Serenegiant common (maven repo 필요)
+    // ✅ Serenegiant common (외부 Maven repo 필요)
     api("com.serenegiant:common:4.1.1") {
         exclude(group = "com.android.support", module = "support-v4")
         exclude(group = "com.android.support", module = "support-annotations")
     }
 }
-
 
 afterEvaluate {
     publishing {
@@ -79,27 +69,40 @@ afterEvaluate {
                 from(components["release"])
                 groupId = project.group.toString()
                 artifactId = "libuvccamera-only"
-                version = project.version.toString()
+                version = project.version.toString() // ✅ 명시 추가
 
                 pom {
-                    name.set("libuvccamera-only")
-                    description.set("UVC camera library (p2ach fork)")
-                    licenses {
-                        license {
-                            name.set("Apache-2.0")
-                            url.set("http://www.apache.org/licenses/LICENSE-2.0")
+                    withXml {
+                        val root = asNode()
+                        val deps = (root.get("dependencies") as? groovy.util.NodeList)
+                            ?.firstOrNull() as? groovy.util.Node ?: return@withXml
+
+                        deps.children().toList().forEach { child ->
+                            val dep = child as? groovy.util.Node ?: return@forEach
+                            val aid = (dep.get("artifactId") as? groovy.util.NodeList)?.text()?.trim()
+                            if (aid == "common") {
+                                // groupId 교정
+                                val gidList = dep.get("groupId") as? groovy.util.NodeList
+                                if (gidList != null && gidList.isNotEmpty()) {
+                                    val gidNode = gidList[0] as groovy.util.Node
+                                    gidNode.setValue("com.serenegiant")    // ✅ node.value 대신 setValue()
+                                } else {
+                                    dep.appendNode("groupId", "com.serenegiant")
+                                }
+
+                                // version 교정
+                                val verList = dep.get("version") as? groovy.util.NodeList
+                                if (verList != null && verList.isNotEmpty()) {
+                                    val verNode = verList[0] as groovy.util.Node
+                                    verNode.setValue("4.1.1")              // ✅ setValue()
+                                } else {
+                                    dep.appendNode("version", "4.1.1")
+                                }
+                            }
                         }
                     }
                 }
             }
-
-            // 필요 시 디버그도 배포
-            // create<MavenPublication>("mavenDebug") {
-            //     from(components["debug"])
-            //     groupId = group.toString()
-            //     artifactId = "libuvccamera-debug"
-            //     version = version.toString()
-            // }
         }
 
         repositories {
