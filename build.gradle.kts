@@ -1,5 +1,7 @@
 plugins {
     id("com.android.library")
+    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.kapt")
     id("maven-publish")
 }
 
@@ -12,7 +14,6 @@ android {
 
     defaultConfig {
         minSdk = 21
-        targetSdk = 34
         ndk {
             abiFilters += listOf("arm64-v8a", "armeabi-v7a")
         }
@@ -34,7 +35,9 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
-    externalNativeBuild {
+    kotlinOptions { jvmTarget = "11"}
+
+        externalNativeBuild {
         ndkBuild {
             path = file("src/main/jni/Android.mk")
         }

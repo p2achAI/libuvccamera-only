@@ -13,6 +13,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        gradlePluginPortal()
         maven("https://raw.githubusercontent.com/saki4510t/libcommon/master/repository/")
         maven("https://jitpack.io")
     }
