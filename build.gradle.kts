@@ -6,7 +6,7 @@ plugins {
 
 // ✅ group / version 명시 (JitPack용)
 group = "com.github.p2achAI"
-version = "1.0.15" // ← 새 버전명 (Git 태그도 v1.0.15 로 푸시할 예정)
+version = "1.0.16"
 
 android {
     namespace = "com.serenegiant.uvccamera"
