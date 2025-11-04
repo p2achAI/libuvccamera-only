@@ -1,7 +1,6 @@
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.kapt")
     id("maven-publish")
 }
 
@@ -43,13 +42,12 @@ android {
         }
     }
 
-    // ✅ 먼저 variant를 공개해 두어야 components["release"]가 생성됩니다.
+
     publishing {
         singleVariant("release") {
             withSourcesJar()
         }
-        // 필요하면 debug도 공개
-        // singleVariant("debug") { withSourcesJar() }
+
     }
 
     sourceSets {
@@ -72,7 +70,7 @@ dependencies {
     }
 }
 
-// ❗️ from(components["release"])는 afterEvaluate 시점에서!
+
 afterEvaluate {
     publishing {
         publications {
