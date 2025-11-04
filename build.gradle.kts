@@ -4,8 +4,9 @@ plugins {
     id("maven-publish")
 }
 
-group = project.findProperty("group") as String? ?: "com.github.p2achAI"
-
+group = (findProperty("POM_GROUP") as String?)
+    ?.takeIf { it.isNotBlank() }
+    ?: "com.github.p2achAI"
 android {
     namespace = "com.serenegiant.uvccamera"
     compileSdk = 34
@@ -15,7 +16,7 @@ android {
         ndk {
             abiFilters += listOf("arm64-v8a", "armeabi-v7a")
         }
-        consumerProguardFiles("proguard-rules.pro")
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildTypes {
@@ -49,12 +50,12 @@ android {
 
     }
 
-    sourceSets {
-        getByName("main") {
-            jni.srcDirs()     // 빈 배열 지정 (ndkBuild 사용)
-            jniLibs.srcDirs() // 빈 배열 지정 (빌드 산출물 사용)
-        }
-    }
+//    sourceSets {
+//        getByName("main") {
+//            jni.srcDirs()     // 빈 배열 지정 (ndkBuild 사용)
+//            jniLibs.srcDirs() // 빈 배열 지정 (빌드 산출물 사용)
+//        }
+//    }
 }
 
 dependencies {
@@ -75,7 +76,7 @@ afterEvaluate {
         publications {
             create<MavenPublication>("mavenRelease") {
                 from(components["release"])
-                groupId = group.toString()
+                groupId = project.group.toString()
                 artifactId = "libuvccamera"
 
                 pom {
