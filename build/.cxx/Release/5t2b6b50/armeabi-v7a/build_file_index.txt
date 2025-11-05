@@ -1,2 +1,0 @@
-/Users/seehoonkim/Desktop/workspace/P2achAndroidLibrary/libuvccamera/src/main/jni/Android.mk
-/Users/seehoonkim/Desktop/workspace/P2achAndroidLibrary/libuvccamera/src/main/jni/Application.mk
